@@ -67,6 +67,7 @@ func (r *leaseUpdater) WithHubLeaseConfig(config *rest.Config, clusterName strin
 		r.hubKubeClient = hubClient
 	}
 
+	r.clusterName = clusterName
 	return r
 }
 
