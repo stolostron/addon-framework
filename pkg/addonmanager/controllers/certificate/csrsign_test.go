@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/open-cluster-management/addon-framework/pkg/addonmanager/addontesting"
-	"github.com/open-cluster-management/addon-framework/pkg/agent"
 	addonapiv1alpha1 "github.com/open-cluster-management/api/addon/v1alpha1"
 	fakeaddon "github.com/open-cluster-management/api/client/addon/clientset/versioned/fake"
 	addoninformers "github.com/open-cluster-management/api/client/addon/informers/externalversions"
@@ -16,6 +14,8 @@ import (
 	clusterv1informers "github.com/open-cluster-management/api/client/cluster/informers/externalversions"
 	clusterv1 "github.com/open-cluster-management/api/cluster/v1"
 	"github.com/openshift/library-go/pkg/operator/events/eventstesting"
+	"github.com/stolostron/addon-framework/pkg/addonmanager/addontesting"
+	"github.com/stolostron/addon-framework/pkg/agent"
 	certv1 "k8s.io/api/certificates/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubeinformers "k8s.io/client-go/informers"

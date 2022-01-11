@@ -1,4 +1,4 @@
-module github.com/open-cluster-management/addon-framework
+module github.com/stolostron/addon-framework
 
 go 1.15
 

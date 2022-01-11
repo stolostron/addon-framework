@@ -9,14 +9,14 @@ import (
 
 	goflag "flag"
 
-	"github.com/open-cluster-management/addon-framework/pkg/version"
 	"github.com/openshift/library-go/pkg/controller/controllercmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/stolostron/addon-framework/pkg/version"
 	utilflag "k8s.io/component-base/cli/flag"
 	"k8s.io/component-base/logs"
 
-	"github.com/open-cluster-management/addon-framework/pkg/addonmanager"
+	"github.com/stolostron/addon-framework/pkg/addonmanager"
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
 )
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/open-cluster-management/addon-framework/pkg/agent"
 	addonv1alpha1client "github.com/open-cluster-management/api/client/addon/clientset/versioned"
 	addoninformerv1alpha1 "github.com/open-cluster-management/api/client/addon/informers/externalversions/addon/v1alpha1"
 	addonlisterv1alpha1 "github.com/open-cluster-management/api/client/addon/listers/addon/v1alpha1"
@@ -12,6 +11,7 @@ import (
 	clusterlister "github.com/open-cluster-management/api/client/cluster/listers/cluster/v1"
 	"github.com/openshift/library-go/pkg/controller/factory"
 	"github.com/openshift/library-go/pkg/operator/events"
+	"github.com/stolostron/addon-framework/pkg/agent"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"

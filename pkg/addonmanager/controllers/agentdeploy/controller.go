@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/open-cluster-management/addon-framework/pkg/addonmanager/constants"
-	"github.com/open-cluster-management/addon-framework/pkg/agent"
 	addonapiv1alpha1 "github.com/open-cluster-management/api/addon/v1alpha1"
 	addonv1alpha1client "github.com/open-cluster-management/api/client/addon/clientset/versioned"
 	addoninformerv1alpha1 "github.com/open-cluster-management/api/client/addon/informers/externalversions/addon/v1alpha1"
@@ -18,6 +16,8 @@ import (
 	workapiv1 "github.com/open-cluster-management/api/work/v1"
 	"github.com/openshift/library-go/pkg/controller/factory"
 	"github.com/openshift/library-go/pkg/operator/events"
+	"github.com/stolostron/addon-framework/pkg/addonmanager/constants"
+	"github.com/stolostron/addon-framework/pkg/agent"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"

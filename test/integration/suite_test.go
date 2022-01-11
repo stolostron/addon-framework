@@ -8,17 +8,17 @@ import (
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 
-	"github.com/open-cluster-management/addon-framework/pkg/agent"
+	"github.com/stolostron/addon-framework/pkg/agent"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
-	"github.com/open-cluster-management/addon-framework/pkg/addonmanager"
 	addonapiv1alpha1 "github.com/open-cluster-management/api/addon/v1alpha1"
 	addonv1alpha1client "github.com/open-cluster-management/api/client/addon/clientset/versioned"
 	clusterv1client "github.com/open-cluster-management/api/client/cluster/clientset/versioned"
 	workclientset "github.com/open-cluster-management/api/client/work/clientset/versioned"
 	clusterv1 "github.com/open-cluster-management/api/cluster/v1"
+	"github.com/stolostron/addon-framework/pkg/addonmanager"
 	certificatesv1 "k8s.io/api/certificates/v1"
 )
 
