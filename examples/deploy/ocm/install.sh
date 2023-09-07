@@ -16,7 +16,7 @@ cd registration-operator || {
 }
 
 echo "############  Deploying"
-make deploy
+IMAGE_TAG=v0.11.0 make deploy
 if [ $? -ne 0 ]; then
  echo "############  Failed to deploy"
  exit 1
