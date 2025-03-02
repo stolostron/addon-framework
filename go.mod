@@ -11,7 +11,7 @@ require (
 	github.com/openshift/library-go v0.0.0-20220525173854-9b950a41acdc
 	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.10.0
 	helm.sh/helm/v3 v3.9.4
 	k8s.io/api v0.26.1
 	k8s.io/apiextensions-apiserver v0.26.1
