@@ -1,6 +1,8 @@
 module open-cluster-management.io/addon-framework
 
-go 1.19
+go 1.21
+
+toolchain go1.24.4
 
 require (
 	github.com/evanphx/json-patch v4.12.0+incompatible
@@ -28,7 +30,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 // indirect
