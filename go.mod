@@ -1,6 +1,8 @@
 module open-cluster-management.io/addon-framework
 
-go 1.19
+go 1.22
+
+toolchain go1.24.4
 
 require (
 	github.com/evanphx/json-patch v4.12.0+incompatible
@@ -112,7 +114,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21 // indirect
 	google.golang.org/grpc v1.49.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
