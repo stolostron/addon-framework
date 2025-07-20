@@ -10,7 +10,7 @@ require (
 	github.com/openshift/build-machinery-go v0.0.0-20211213093930-7e33a7eb4ce3
 	github.com/openshift/library-go v0.0.0-20220525173854-9b950a41acdc
 	github.com/spf13/cobra v1.6.0
-	github.com/spf13/pflag v1.0.5
+	github.com/spf13/pflag v1.0.7
 	github.com/stretchr/testify v1.8.0
 	helm.sh/helm/v3 v3.9.4
 	k8s.io/api v0.26.1
