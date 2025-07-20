@@ -7,6 +7,7 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:scope="Namespaced",shortName={"mca","mcas"}
 // +kubebuilder:printcolumn:name="Available",type=string,JSONPath=`.status.conditions[?(@.type=="Available")].status`
 // +kubebuilder:printcolumn:name="Degraded",type=string,JSONPath=`.status.conditions[?(@.type=="Degraded")].status`
 // +kubebuilder:printcolumn:name="Progressing",type=string,JSONPath=`.status.conditions[?(@.type=="Progressing")].status`
@@ -42,7 +43,7 @@ type ManagedClusterAddOnSpec struct {
 
 	// configs is a list of add-on configurations.
 	// In scenario where the current add-on has its own configurations.
-	// An empty list means there are no defautl configurations for add-on.
+	// An empty list means there are no default configurations for add-on.
 	// The default is an empty list
 	// +optional
 	Configs []AddOnConfig `json:"configs,omitempty"`
@@ -55,13 +56,15 @@ type RegistrationConfig struct {
 	// +required
 	// +kubebuilder:validation:MaxLength=571
 	// +kubebuilder:validation:MinLength=5
+	// +kubebuilder:validation:Pattern=^([a-z0-9][a-z0-9-]*[a-z0-9]\.)+[a-z]+\/[a-z0-9-\.]+$
 	SignerName string `json:"signerName"`
 
 	// subject is the user subject of the addon agent to be registered to the hub.
 	// If it is not set, the addon agent will have the default subject
 	// "subject": {
-	//	"user": "system:open-cluster-management:addon:{addonName}:{clusterName}:{agentName}",
-	//	"groups: ["system:open-cluster-management:addon", "system:open-cluster-management:addon:{addonName}", "system:authenticated"]
+	//   "user": "system:open-cluster-management:cluster:{clusterName}:addon:{addonName}:agent:{agentName}",
+	//   "groups: ["system:open-cluster-management:cluster:{clusterName}:addon:{addonName}",
+	//             "system:open-cluster-management:addon:{addonName}", "system:authenticated"]
 	// }
 	//
 	// +optional
@@ -180,13 +183,23 @@ type ConfigReference struct {
 	// This field is synced from ClusterManagementAddOn configGroupResource field.
 	ConfigGroupResource `json:",inline"`
 
+	// Deprecated: Use DesiredConfig instead
 	// This field is synced from ClusterManagementAddOn defaultConfig and ManagedClusterAddOn config fields.
 	// If both of them are defined, the ManagedClusterAddOn configs will overwrite the ClusterManagementAddOn
 	// defaultConfigs.
 	ConfigReferent `json:",inline"`
 
+	// Deprecated: Use LastAppliedConfig instead
 	// lastObservedGeneration is the observed generation of the add-on configuration.
 	LastObservedGeneration int64 `json:"lastObservedGeneration"`
+
+	// desiredConfig record the desired config spec hash.
+	// +optional
+	DesiredConfig *ConfigSpecHash `json:"desiredConfig"`
+
+	// lastAppliedConfig record the config spec hash when the corresponding ManifestWork is applied successfully.
+	// +optional
+	LastAppliedConfig *ConfigSpecHash `json:"lastAppliedConfig"`
 }
 
 // HealthCheckMode indicates the mode for the addon to check its healthiness status
@@ -308,6 +321,9 @@ const (
 	// ManagedClusterAddOnConditionConfigured represents that the addon agent is configured with its configuration
 	ManagedClusterAddOnConditionConfigured string = "Configured"
 
+	// ManagedClusterAddOnConditionProgressing represents that the addon agent is applying configurations.
+	ManagedClusterAddOnConditionProgressing string = "Progressing"
+
 	// ManagedClusterAddOnManifestApplied is a condition type representing whether the manifest of an addon is
 	// applied correctly.
 	ManagedClusterAddOnManifestApplied = "ManifestApplied"
@@ -323,9 +339,9 @@ const (
 	// valid in Hosted mode.
 	ManagedClusterAddOnHostingClusterValidity = "HostingClusterValidity"
 
-	// ManagedClusterAddOnUnsupportedConfigurationType is a condition type representing whether the config resources
-	// are supported.
-	ManagedClusterAddOnUnsupportedConfigurationType = "UnsupportedConfiguration"
+	// ManagedClusterAddOnRegistrationApplied is a condition type representing whether the registration of
+	// the addon agent is configured.
+	ManagedClusterAddOnRegistrationApplied = "RegistrationApplied"
 )
 
 // the reasons of condition ManagedClusterAddOnConditionAvailable
@@ -397,13 +413,40 @@ const (
 	HostingClusterValidityReasonInvalid = "HostingClusterInvalid"
 )
 
-// the reason of condition ManagedClusterAddOnUnsupportedConfigurationType
+// the reason of condition ManagedClusterAddOnConditionProgressing
 const (
-	// AddonReasonConfigurationSupported is the reason of condition UnsupportedConfiguration indicating the configuration
-	// in clusterManagementAddon is supported.
-	AddonReasonConfigurationSupported = "ConfigurationSupported"
+	// ProgressingReasonProgressing is the reason of condition Progressing indicating the addon configuration is
+	// applying.
+	ProgressingReasonProgressing = "Progressing"
 
-	// AddonReasonConfigurationUnsupported is the reason of condition UnsupportedConfiguration indicating the configuration
-	// in clusterManagementAddon is not supported.
-	AddonReasonConfigurationUnsupported = "ConfigurationUnsupported"
+	// ProgressingReasonCompleted is the reason of condition Progressing indicating the addon configuration is
+	// applied successfully.
+	ProgressingReasonCompleted = "Completed"
+
+	// ProgressingReasonFailed is the reason of condition Progressing indicating the addon configuration
+	// failed to apply.
+	ProgressingReasonFailed = "Failed"
+
+	// ProgressingReasonWaitingForCanary is the reason of condition Progressing indicating the addon configuration
+	// upgrade is pending and waiting for canary is done.
+	ProgressingReasonWaitingForCanary = "WaitingForCanary"
+
+	// ProgressingReasonConfigurationUnsupported is the reason of condition Progressing indicating the addon configuration
+	// is not supported.
+	ProgressingReasonConfigurationUnsupported = "ConfigurationUnsupported"
+)
+
+// the reasons of condition ManagedClusterAddOnRegistrationApplied
+const (
+	// RegistrationAppliedNilRegistration is the reason of condition RegistrationApplied indicating that there is no
+	// registration option.
+	RegistrationAppliedNilRegistration = "NilRegistration"
+
+	// RegistrationAppliedSetPermissionFailed is the reason of condition RegistrationApplied indicating that it is
+	// failed to set up rbac for the addon agent.
+	RegistrationAppliedSetPermissionFailed = "SetPermissionFailed"
+
+	// RegistrationAppliedSetPermissionApplied is the reason of condition RegistrationApplied indicating that it is
+	// successful to set up rbac for the addon agent.
+	RegistrationAppliedSetPermissionApplied = "SetPermissionApplied"
 )

@@ -2,21 +2,21 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1alpha1 "open-cluster-management.io/api/cluster/v1alpha1"
 )
 
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope="Cluster"
+// +kubebuilder:resource:scope="Cluster",shortName={"cma","cmas"}
 // +kubebuilder:printcolumn:name="DISPLAY NAME",type=string,JSONPath=`.spec.addOnMeta.displayName`
 // +kubebuilder:printcolumn:name="CRD NAME",type=string,JSONPath=`.spec.addOnConfiguration.crdName`
 
 // ClusterManagementAddOn represents the registration of an add-on to the cluster manager.
-// This resource allows the user to discover which add-on is available for the cluster manager and
-// also provides metadata information about the add-on.
-// This resource also provides a linkage to ManagedClusterAddOn, the name of the ClusterManagementAddOn
-// resource will be used for the namespace-scoped ManagedClusterAddOn resource.
+// This resource allows you to discover which add-ons are available for the cluster manager
+// and provides metadata information about the add-ons. The ClusterManagementAddOn name is used
+// for the namespace-scoped ManagedClusterAddOn resource.
 // ClusterManagementAddOn is a cluster-scoped resource.
 type ClusterManagementAddOn struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -127,6 +127,15 @@ type ConfigReferent struct {
 	Name string `json:"name"`
 }
 
+// ConfigSpecHash represents the namespace,name and spec hash for an add-on configuration.
+type ConfigSpecHash struct {
+	// namespace and name for an add-on configuration.
+	ConfigReferent `json:",inline"`
+
+	// spec hash for an add-on configuration.
+	SpecHash string `json:"specHash"`
+}
+
 // InstallStrategy represents that related ManagedClusterAddOns should be installed
 // on certain clusters.
 type InstallStrategy struct {
@@ -151,9 +160,9 @@ type InstallStrategy struct {
 const (
 	// AddonInstallStrategyManual is the addon install strategy representing no automatic addon installation
 	AddonInstallStrategyManual string = "Manual"
-	// AddonInstallStrategyManualPlacements is the addon install strategy representing the addon installation
+	// AddonInstallStrategyPlacements is the addon install strategy representing the addon installation
 	// is based on placement decisions.
-	AddonInstallStrategyManualPlacements string = "Placements"
+	AddonInstallStrategyPlacements string = "Placements"
 )
 
 type PlacementRef struct {
@@ -175,10 +184,66 @@ type PlacementStrategy struct {
 	// User can override the configuration by updating the managedClusterAddon directly.
 	// +optional
 	Configs []AddOnConfig `json:"configs,omitempty"`
+	// The rollout strategy to apply addon configurations change.
+	// The rollout strategy only watches the addon configurations defined in ClusterManagementAddOn.
+	// +kubebuilder:default={type: All}
+	// +optional
+	RolloutStrategy clusterv1alpha1.RolloutStrategy `json:"rolloutStrategy,omitempty"`
 }
 
 // ClusterManagementAddOnStatus represents the current status of cluster management add-on.
 type ClusterManagementAddOnStatus struct {
+	// defaultconfigReferences is a list of current add-on default configuration references.
+	// +optional
+	DefaultConfigReferences []DefaultConfigReference `json:"defaultconfigReferences,omitempty"`
+	// installProgression is a list of current add-on configuration references per placement.
+	// +optional
+	InstallProgressions []InstallProgression `json:"installProgressions,omitempty"`
+}
+
+type InstallProgression struct {
+	PlacementRef `json:",inline"`
+
+	// configReferences is a list of current add-on configuration references.
+	// +optional
+	ConfigReferences []InstallConfigReference `json:"configReferences,omitempty"`
+
+	// conditions describe the state of the managed and monitored components for the operator.
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +optional
+	Conditions []metav1.Condition `json:"conditions,omitempty"  patchStrategy:"merge" patchMergeKey:"type"`
+}
+
+// DefaultConfigReference is a reference to the current add-on configuration.
+// This resource is used to record the configuration resource for the current add-on.
+type DefaultConfigReference struct {
+	// This field is synced from ClusterManagementAddOn Configurations.
+	ConfigGroupResource `json:",inline"`
+
+	// desiredConfig record the desired config spec hash.
+	DesiredConfig *ConfigSpecHash `json:"desiredConfig"`
+}
+
+// InstallConfigReference is a reference to the current add-on configuration.
+// This resource is used to record the configuration resource for the current add-on.
+type InstallConfigReference struct {
+	// This field is synced from ClusterManagementAddOn Configurations.
+	ConfigGroupResource `json:",inline"`
+
+	// desiredConfig record the desired config name and spec hash.
+	DesiredConfig *ConfigSpecHash `json:"desiredConfig"`
+
+	// lastKnownGoodConfig records the last known good config spec hash.
+	// For fresh install or rollout with type UpdateAll or RollingUpdate, the
+	// lastKnownGoodConfig is the same as lastAppliedConfig.
+	// For rollout with type RollingUpdateWithCanary, the lastKnownGoodConfig
+	// is the last successfully applied config spec hash of the canary placement.
+	LastKnownGoodConfig *ConfigSpecHash `json:"lastKnownGoodConfig"`
+
+	// lastAppliedConfig records the config spec hash when the all the corresponding
+	// ManagedClusterAddOn are applied successfully.
+	LastAppliedConfig *ConfigSpecHash `json:"lastAppliedConfig"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -193,3 +258,18 @@ type ClusterManagementAddOnList struct {
 	// Items is a list of cluster management add-ons.
 	Items []ClusterManagementAddOn `json:"items"`
 }
+
+const (
+	// AddonLifecycleAnnotationKey is an annotation key on ClusterManagementAddon to indicate the installation
+	// and upgrade of addon should be handled by the general addon manager or addon itself. The valid values are
+	// addon-manager and self. If the annotation is not set, addon lifecycle is handled by addon itself.
+	AddonLifecycleAnnotationKey = "addon.open-cluster-management.io/lifecycle"
+	// AddonLifecycleAddonManagerAnnotationValue is the value of annotation AddonLifecycleAnnotationKey indicating
+	// that the addon installation and upgrade is handled by the general addon manager. This should be set only
+	// when featugate AddonManager on hub is enabled
+	AddonLifecycleAddonManagerAnnotationValue = "addon-manager"
+	// AddonLifecycleSelfManageAnnotationValue is the value of annotation AddonLifecycleAnnotationKey indicating
+	// that the addon installation and upgrade is handled the addon itself. The general addon manager will ignore
+	// addons with this annotation.
+	AddonLifecycleSelfManageAnnotationValue = "self"
+)

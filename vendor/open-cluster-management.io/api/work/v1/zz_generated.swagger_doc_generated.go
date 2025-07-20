@@ -93,12 +93,22 @@ var map_FieldValue = map[string]string{
 	"":        "FieldValue is the value of the status field. The value of the status field can only be integer, string or boolean.",
 	"type":    "Type represents the type of the value, it can be integer, string or boolean.",
 	"integer": "Integer is the integer value when type is integer.",
-	"string":  "String is the string value when when type is string.",
+	"string":  "String is the string value when type is string.",
 	"boolean": "Boolean is bool value when type is boolean.",
+	"jsonRaw": "JsonRaw is a json string when type is a list or object",
 }
 
 func (FieldValue) SwaggerDoc() map[string]string {
 	return map_FieldValue
+}
+
+var map_IgnoreField = map[string]string{
+	"condition": "Condition defines the condition that the fields should be ignored when apply the resource. Fields in JSONPaths are all ignored when condition is met, otherwise no fields is ignored in the apply operation.",
+	"jsonPaths": "JSONPaths defines the list of json path in the resource to be ignored",
+}
+
+func (IgnoreField) SwaggerDoc() map[string]string {
+	return map_IgnoreField
 }
 
 var map_JsonPath = map[string]string{
@@ -269,6 +279,7 @@ func (SelectivelyOrphan) SwaggerDoc() map[string]string {
 var map_ServerSideApplyConfig = map[string]string{
 	"force":        "Force represents to force apply the manifest.",
 	"fieldManager": "FieldManager is the manager to apply the resource. It is work-agent by default, but can be other name with work-agent as the prefix.",
+	"ignoreFields": "IgnoreFields defines a list of json paths in the resource that will not be updated on the spoke.",
 }
 
 func (ServerSideApplyConfig) SwaggerDoc() map[string]string {
@@ -286,8 +297,8 @@ func (StatusFeedbackResult) SwaggerDoc() map[string]string {
 
 var map_UpdateStrategy = map[string]string{
 	"":                "UpdateStrategy defines the strategy to update this manifest",
-	"type":            "type defines the strategy to update this manifest, default value is Update. Update type means to update resource by an update call. CreateOnly type means do not update resource based on current manifest. ServerSideApply type means to update resource using server side apply with work-controller as the field manager. If there is conflict, the related Applied condition of manifest will be in the status of False with the reason of ApplyConflict.",
-	"serverSideApply": "serverSideApply defines the configuration for server side apply. It is honored only when type of updateStrategy is ServerSideApply",
+	"type":            "type defines the strategy to update this manifest, default value is Update. Update type means to update resource by an update call. CreateOnly type means do not update resource based on current manifest. ServerSideApply type means to update resource using server side apply with work-controller as the field manager. If there is conflict, the related Applied condition of manifest will be in the status of False with the reason of ApplyConflict. ReadOnly type means the agent will only check the existence of the resource based on its metadata, statusFeedBackRules can still be used to get feedbackResults.",
+	"serverSideApply": "serverSideApply defines the configuration for server side apply. It is honored only when the type of the updateStrategy is ServerSideApply",
 }
 
 func (UpdateStrategy) SwaggerDoc() map[string]string {
